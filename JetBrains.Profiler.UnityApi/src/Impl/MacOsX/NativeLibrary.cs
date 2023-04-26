@@ -5,7 +5,7 @@ namespace JetBrains.Profiler.UnityApi.Impl.MacOsX
 {
   internal sealed class NativeLibrary : INativeLibrary
   {
-    private readonly IntPtr myHandle;
+    private IntPtr myHandle;
 
     public NativeLibrary(string libraryPath)
     {
@@ -26,7 +26,19 @@ namespace JetBrains.Profiler.UnityApi.Impl.MacOsX
 
     void IDisposable.Dispose()
     {
-      LibDyldDylib.dlclose(myHandle);
+      Dispose();
+      GC.SuppressFinalize(this);
     }
+
+    private void Dispose()
+    {
+      if (myHandle != IntPtr.Zero)
+      {
+        LibDyldDylib.dlclose(myHandle);
+        myHandle = IntPtr.Zero;
+      }
+    }
+
+    ~NativeLibrary() => Dispose();
   }
 }

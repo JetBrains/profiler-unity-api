@@ -5,7 +5,7 @@ namespace JetBrains.Profiler.UnityApi.Impl.Windows
 {
   internal sealed class NativeLibrary : INativeLibrary
   {
-    private readonly IntPtr myHandle;
+    private IntPtr myHandle;
 
     public NativeLibrary(string libraryPath)
     {
@@ -26,7 +26,19 @@ namespace JetBrains.Profiler.UnityApi.Impl.Windows
 
     void IDisposable.Dispose()
     {
-      Kernel32Dll.FreeLibrary(myHandle);
+      Dispose();
+      GC.SuppressFinalize(this);
     }
+
+    private void Dispose()
+    {
+      if (myHandle != IntPtr.Zero)
+      {
+        Kernel32Dll.FreeLibrary(myHandle);
+        myHandle = IntPtr.Zero;
+      }
+    }
+
+    ~NativeLibrary() => Dispose();
   }
 }
